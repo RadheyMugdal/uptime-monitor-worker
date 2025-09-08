@@ -1,0 +1,29 @@
+{
+  "name": "monitor-check-worker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsc -b && node ./dist/index.js",
+    "build": "tsc -b"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bullmq": "^5.56.10",
+    "dotenv": "^17.2.1",
+    "drizzle-orm": "^0.44.4",
+    "nodemailer": "^7.0.5",
+    "pg": "^8.16.3",
+    "resend": "^6.0.1"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.20.4"
+  }
+}
