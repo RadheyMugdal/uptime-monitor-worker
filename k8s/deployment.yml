@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitor-check-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitor-check-worker
+  template:
+    metadata:
+      labels:
+        app: monitor-check-worker
+    spec:
+      containers:
+        - name: monitor-check-worker
+          image: radhemugdal/monitor-check-worker:latest
+          envFrom:
+            - configMapRef:
+                name: monitor-check-worker-config
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: monitor-check-worker-secret
+                  key: REDIS_URL
+            - name : DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: monitor-check-worker-secret
+                  key: DATABASE_URL
+          volumeMounts:
+            - name: monitor-check-worker-config-vol
+              mountPath: /app/config
+              readOnly: true
+      volumes:
+        - name: monitor-check-worker-config-vol
+          configMap:
+            name: monitor-check-worker-config

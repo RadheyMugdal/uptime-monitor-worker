@@ -5,7 +5,7 @@ import { db } from "./db/index.js";
 import { monitor, checkResult, incident } from "./db/schema.js";
 import { Redis } from "ioredis";
 import { NotificationService } from "./notification.js";
-export const connection = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
+export const connection = new Redis(process.env.REDIS_URL, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     lazyConnect: true,
