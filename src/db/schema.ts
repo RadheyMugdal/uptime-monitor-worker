@@ -1,5 +1,8 @@
 import { pgEnum } from "drizzle-orm/pg-core";
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+
+export const planEnum = pgEnum("plan", ["free", "pro", "business"])
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -9,6 +12,8 @@ export const user = pgTable("user", {
 		.$defaultFn(() => false)
 		.notNull(),
 	image: text("image"),
+	plan: planEnum("plan").notNull().default("free"),
+	subscriptionExpiresAt: timestamp("subscription_expires_at", { withTimezone: true }),
 	createdAt: timestamp("created_at")
 		.$defaultFn(() => /* @__PURE__ */ new Date())
 		.notNull(),
@@ -85,6 +90,7 @@ export const monitor = pgTable("monitor", (t) => ({
 
 export const checkResult = pgTable("check_result", (t) => ({
 	id: t.uuid("id").primaryKey().defaultRandom(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
 	monitorId: t.uuid("monitor_id").notNull().references(() => monitor.id, { onDelete: "cascade" }),
 	status: status("status").notNull(),
 	responseMs: t.integer("response_ms").notNull(),
@@ -124,3 +130,37 @@ export const notificationChannel = pgTable("notification_channel", (t) => ({
 	createdAt: t.timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }));
+
+export const statusPage = pgTable("status_page", (t) => ({
+	id: t.uuid("id").primaryKey().defaultRandom(),
+	userId: t.text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+	slug: t.text("slug").notNull().unique(),
+	title: t.text("title").notNull(),
+	description: t.text("description"),
+	isPublic: t.boolean("is_public").notNull().default(true),
+	createdAt: t.timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: t.timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}));
+
+export const statusPageMonitor = pgTable("status_page_monitor", (t) => ({
+	statusPageId: t.uuid("status_page_id").notNull().references(() => statusPage.id, { onDelete: "cascade" }),
+	monitorId: t.uuid("monitor_id").notNull().references(() => monitor.id, { onDelete: "cascade" }),
+}), (t) => ({
+	pk: primaryKey({ columns: [t.statusPageId, t.monitorId] }),
+}));
+
+export const statusPageRelations = relations(statusPage, ({ many }) => ({
+	monitors: many(statusPageMonitor),
+}));
+
+export const statusPageMonitorRelations = relations(statusPageMonitor, ({ one }) => ({
+	statusPage: one(statusPage, {
+		fields: [statusPageMonitor.statusPageId],
+		references: [statusPage.id],
+	}),
+	monitor: one(monitor, {
+		fields: [statusPageMonitor.monitorId],
+		references: [monitor.id],
+	}),
+}));
+

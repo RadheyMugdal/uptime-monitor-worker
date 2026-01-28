@@ -225,6 +225,7 @@ const worker = new Worker(
             // Insert check result (remove statusCode and errorMessage if not in schema)
             await db.insert(checkResult).values({
                 monitorId,
+                userId: existingMonitor.userId,
                 status: results.isUp ? "up" : "down",
                 responseMs: results.responseMs,
                 createdAt: new Date(),
